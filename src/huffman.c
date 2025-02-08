@@ -164,6 +164,12 @@ static void huffman_encode_init_from_codelist(HUFCODEC *phc)
     /* 对 templist 按 depth 进行快速排序 */
     qsort(templist, n, sizeof(HUFCODEITEM), cmp_depth_item);
 
+    // 检查最小depth是否小于0
+    if (templist[0].depth<=0) {
+        printf("huffman encode error: depth <= 0 !\n");
+        return;
+    }
+
 #if ENABLE_DEBUG_DUMP
     // dump done code list
     dump_huffman_codelist(" done ---", templist, n, -1);
@@ -190,11 +196,13 @@ static void huffman_encode_init_from_codelist(HUFCODEC *phc)
 
     k    = 0;
     code = 0;
-    for (j=templist[0].depth-1; j<MAX_HUFFMAN_CODE_LEN; j++) {
-        for (i=0; i<huftab[j]; i++) {
-            templist[k++].code = code++;
+    if (n>0) {
+        for (j=templist[0].depth-1; j<MAX_HUFFMAN_CODE_LEN; j++) {
+            for (i=0; i<huftab[j]; i++) {
+                templist[k++].code = code++;
+            }
+            code <<= 1;
         }
-        code <<= 1;
     }
 
 #if ENABLE_DEBUG_DUMP
