@@ -43,7 +43,8 @@ int bmp_load(BMP *pb, char *file)
     pb->stride = ALIGN(pb->width * 3, 4);
     if ((long long)pb->stride * pb->height >= 0x80000000) {
         printf("bmp's width * height is out of range !\n");
-        goto done;
+        fclose(fp);
+        return -1;
     }
     pb->pdata  = malloc((size_t)pb->stride * pb->height);
     if (pb->pdata) {
@@ -52,11 +53,13 @@ int bmp_load(BMP *pb, char *file)
             pdata -= pb->stride;
             fread(pdata, pb->stride, 1, fp);
         }
+    } else {
+        fclose(fp);
+        return -1;
     }
 
-done:
-    if (fp) fclose(fp);
-    return pb->pdata ? 0 : -1;
+    fclose(fp);
+    return 0;
 }
 
 int bmp_create(BMP *pb, int w, int h)
